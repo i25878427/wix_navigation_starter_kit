@@ -1,9 +1,6 @@
 import * as types from '../actions/actionTypes';
 import Immutable from 'seamless-immutable';
-
-const initialState = Immutable({
-  count: 0
-});
+import initialState from './counterInitialState';
 
 export default function counter(state = initialState, action = {}) {
   switch (action.type) {

@@ -4,14 +4,13 @@ import {Provider} from "react-redux";
 import * as reducers from "./reducers";
 import * as appActions from "./actions/appActions";
 import thunk from "redux-thunk";
+import configureStore from './store/configureStore'
 
 // screen related book keeping
 import {registerScreens} from './screens';
 
 // redux related book keeping
-const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
-const reducer = combineReducers(reducers);
-const store = createStoreWithMiddleware(reducer);
+const store = configureStore();
 
 // screen related book keeping
 registerScreens(store, Provider);

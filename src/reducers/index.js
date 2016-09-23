@@ -1,7 +1,10 @@
+import {combineReducers} from 'redux';
 import app from './appReducer';
 import counter from './counterReducer';
 
-export {
+const rootReducer = combineReducers({
   app,
   counter
-};
+})
+
+export default rootReducer;
