@@ -1,8 +1,20 @@
 import {Navigation} from 'react-native-navigation';
+import {createStore, applyMiddleware, combineReducers} from "redux";
+import {Provider} from "react-redux";
+import * as reducers from "./reducers";
+import * as appActions from "./actions/appActions";
+import thunk from "redux-thunk";
 
 // screen related book keeping
 import {registerScreens} from './screens';
-registerScreens();
+
+// redux related book keeping
+const createStoreWithMiddleware = applyMiddleware(thunk)(createStore);
+const reducer = combineReducers(reducers);
+const store = createStoreWithMiddleware(reducer);
+
+// screen related book keeping
+registerScreens(store, Provider);
 
 // this will start our app
 Navigation.startTabBasedApp({

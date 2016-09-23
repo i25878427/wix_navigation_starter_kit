@@ -26,14 +26,18 @@ class SideMenu extends Component {
   render() {
     return (
       <View style={styles.sideMenu}>
-        <Text style={styles.title}>Hello from SideMenu</Text>
+        <Text style={styles.title}>{this.props.title}</Text>
 
         <TouchableOpacity onPress={ this.onShowModalPress.bind(this) }>
           <Text style={styles.button}>Show modal</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={ this.onPushScreen.bind(this) }>
-          <Text style={styles.button}>Push screen</Text>
+        <TouchableOpacity onPress={ this.onPushScreenToFirstTab.bind(this) }>
+          <Text style={styles.button}>Push screen to first tab</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={ this.onPushScreenToSecondTab.bind(this) }>
+          <Text style={styles.button}>Push screen to second tab</Text>
         </TouchableOpacity>
       </View>
     );
@@ -58,9 +62,15 @@ class SideMenu extends Component {
     });
   }
 
-  onPushScreen() {
+  onPushScreenToFirstTab() {
     this.props.navigator.handleDeepLink({
       link: 'tab1/pushScreen/example.PushedScreen'
+    });
+  }
+
+  onPushScreenToSecondTab() {
+    this.props.navigator.handleDeepLink({
+      link: 'tab2/pushScreen/example.PushedScreen'
     });
   }
 }
@@ -68,7 +78,7 @@ class SideMenu extends Component {
 const styles = StyleSheet.create({
   sideMenu: {
     flex: 1,
-    width: 250,
+    width: 260,
     backgroundColor: '#efefef',
     padding: 20
   },

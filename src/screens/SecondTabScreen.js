@@ -1,140 +1,181 @@
-import React, {Component} from 'react';
+import React, {Component, PropTypes} from 'react';
 import {
   Text,
+  Image,
   View,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
   Alert
 } from 'react-native';
+import { connect } from 'react-redux';
+import * as counterActions from '../actions/counterActions';
 
-export default class SecondTabScreen extends Component {
-  static navigatorStyle: {
+// this is a traditional React component connected to the redux store
+class SecondTabScreen extends Component {
+  static navigatorStyle = {
+    drawUnderNavBar: true,
     drawUnderTabBar: true,
-    navBarBackgroundColor: '#4dbce9',
-    navBarTextColor: '#ffff00',
-    navBarSubtitleTextColor: '#ff0000',
-    navBarButtonColor: '#ffffff',
-    statusBarTextColorScheme: 'light'
+    navBarTranslucent: true
+  };
+
+  static navigatorButtons = {
+    fab: {
+      id: 'share',
+      collapsedIcon: require('../../img/ic_home.png'),
+      backgroundColor: '#607D8B'
+    }
   };
 
   constructor(props) {
     super(props);
+    console.log('SecondTabScreen', 'constructor');
     this.buttonsCounter = 0;
-    // if you want to listen on navigator events, set this up
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+  }
+
+  componentWillMount() {
+    console.log('SecondTabScreen', 'componentWillMount');
+  }
+
+  componentWillUnmount() {
+    console.log('SecondTabScreen', 'componentWillUnmount');
   }
 
   render() {
     return (
-      <View style={styles.container}>
+      <ScrollView style={{flex: 1}}>
 
-        <TouchableOpacity onPress={ this.onChangeButtonsPress.bind(this) }>
-          <Text style={styles.button}>Change Buttons</Text>
-        </TouchableOpacity>
+        <Image style={{width: undefined, height: 100}} source={require('../../img/colors.png')} />
 
-        <TouchableOpacity onPress={ this.onChangeTitlePress.bind(this) }>
-          <Text style={styles.button}>Change Title</Text>
-        </TouchableOpacity>
+        <View style={{padding: 20}}>
 
-        <TouchableOpacity onPress={ this.onSwitchTabPress.bind(this) }>
-          <Text style={styles.button}>Switch To Tab#1</Text>
-        </TouchableOpacity>
+          <Text style={styles.text}>
+            <Text style={{fontWeight: '500'}}>Here Too: </Text> {this.props.counter.count}
+          </Text>
 
-        <TouchableOpacity onPress={ this.onSetTabBadgePress.bind(this) }>
-          <Text style={styles.button}>Set Tab Badge</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={ this.onIncrementPress.bind(this) }>
+            <Text style={styles.button}>Increment Counter</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={ this.onToggleTabsPress.bind(this) }>
-          <Text style={styles.button}>Toggle Tabs</Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={ this.onSelectFirstTabPress.bind(this) }>
+            <Text style={styles.button}>Select First Tab</Text>
+          </TouchableOpacity>
 
-      </View>
+          <TouchableOpacity onPress={ this.onSetTabBadgePress.bind(this) }>
+            <Text style={styles.button}>Set Tab Badge</Text>
+          </TouchableOpacity>
+
+
+
+          <TouchableOpacity onPress={ this.onSetButton.bind(this) }>
+            <Text style={styles.button}>Set a button</Text>
+          </TouchableOpacity>
+
+        </View>
+
+      </ScrollView>
     );
   }
-  onChangeTitlePress() {
-    this.props.navigator.setTitle({
-      title: Math.round(Math.random() * 100000).toString()
-    });
-  }
-  onChangeButtonsPress() {
-    let buttons;
-    if (this.buttonsCounter % 3 == 0) {
-      buttons = [
-        {
-          title: 'Edit',
-          id: 'edit',
-          disabled: true
-        },
-        {
-          icon: require('../../img/navicon_add.png'),
-          id: 'add'
-        }
-      ];
-    } else if (this.buttonsCounter % 3 == 1) {
-      buttons = [{
-        title: 'Save',
-        id: 'save'
-      }];
-    } else {
-      buttons = [];
-    }
-    this.buttonsCounter++;
 
-    this.props.navigator.setButtons({
-      rightButtons: buttons,
-      animated: true
-    });
+  onIncrementPress() {
+    this.props.dispatch(counterActions.increment());
   }
-  onSwitchTabPress() {
+
+  onSelectFirstTabPress() {
     this.props.navigator.switchToTab({
       tabIndex: 0
+    })
+  }
+
+  onSetButton() {
+    this.props.navigator.setButtons({
+      rightButtons: [
+        {
+          title: 'Right',
+          icon: require('../../img/navicon_add.png'),
+          id: 'right'
+        }
+      ],
+      leftButtons: [
+        {
+          title: 'Left',
+          icon: require('../../img/navicon_add.png'),
+          id: 'left'
+        }
+      ]
+    });
+    this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
+  }
+
+  onNavigatorEvent(event) {
+    if (event.type == 'DeepLink') {
+      this.handleDeepLink(event);
+    } else {
+      switch (event.id) {
+        case 'left':
+          Alert.alert('NavBar', 'Left button pressed');
+          break;
+        case 'right':
+          Alert.alert('NavBar', 'Right button pressed');
+          break;
+      }
+    }
+    console.log('ListScreen', 'Unhandled event ' + event.id);
+  }
+
+  handleDeepLink(event) {
+    const parts = event.link.split('/');
+    if (parts[0] == 'tab2') {
+      if (parts[1] == 'select') {
+        this.props.navigator.switchToTab({});
+      }
+
+      if (parts[1] == 'pushScreen') {
+        this.pushScreenFromSideMenu();
+      }
+    }
+  }
+
+  pushScreenFromSideMenu() {
+    this.props.navigator.toggleDrawer({
+      side: 'left',
+      animated: true,
+      to: 'closed'
+    });
+
+    this.props.navigator.push({
+      title: "Pushed from SideMenu",
+      screen: 'example.PushedScreen',
+      passProps: {
+        str: 'This is a prop passed in \'navigator.push()\'!',
+        obj: {
+          str: 'This is a prop passed in an object!',
+          arr: [
+            {
+              str: 'This is a prop in an object in an array in an object!'
+            }
+          ]
+        },
+        num: 1234
+      }
     });
   }
+
   onSetTabBadgePress() {
     this.props.navigator.setTabBadge({
-      badge: 12
+      badge: this.props.counter.count,
+      tabIndex: 1
     });
-  }
-  onToggleTabsPress() {
-    this.props.navigator.toggleTabs({
-      to: this.tabsHidden ? 'shown' : 'hidden'
-    });
-    this.tabsHidden = !this.tabsHidden;
-  }
-  onNavigatorEvent(event) {
-    // handle a deep link
-    if (event.type == 'DeepLink') {
-      const parts = event.link.split('/');
-      if (parts[0] == 'tab2') {
-        this.props.navigator.resetTo({
-          title: "Replaced Root",
-          screen: parts[1],
-          animated: true
-        });
-        this.props.navigator.switchToTab();
-      }
-    }
-    // handle a button press
-    if (event.type == 'NavBarButtonPress') {
-      if (event.id == 'edit') {
-        Alert.alert('NavBar', 'Dynamic Edit button pressed');
-      }
-      if (event.id == 'add') {
-        Alert.alert('NavBar', 'Dynamic Add button pressed');
-      }
-      if (event.id == 'save') {
-        Alert.alert('NavBar', 'Dynamic Save button pressed');
-      }
-    }
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: 'white'
+  text: {
+    textAlign: 'center',
+    fontSize: 18,
+    marginBottom: 10,
+    marginTop:10,
   },
   button: {
     textAlign: 'center',
@@ -144,3 +185,12 @@ const styles = StyleSheet.create({
     color: 'blue'
   }
 });
+
+// which props do we want to inject, given the global state?
+function mapStateToProps(state) {
+  return {
+    counter: state.counter
+  };
+}
+
+export default connect(mapStateToProps)(SecondTabScreen);
